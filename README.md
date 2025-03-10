@@ -1,4 +1,4 @@
-# Mac Vision OCR PDF cli
+# Mac Vision OCR PDF 
 
 Mac Vision OCR PDF cli is a Swift command-line tool that extracts text from images and generates a searchable PDF.
 
