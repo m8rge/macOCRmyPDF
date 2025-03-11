@@ -18,6 +18,10 @@ jobs:
       run: swiftc macocrpdf.swift -o macocrpdf
     - uses: googleapis/release-please-action@v4
       id: release
+      with:
+        release-type: simple
+        package-name: macOCRmyPDF
+        command: manifest
     - name: Upload Release Artifact
       if: ${{ steps.release.outputs.release_created }}
       env:
