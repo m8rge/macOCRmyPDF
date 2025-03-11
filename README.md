@@ -5,7 +5,6 @@ Mac Vision OCR PDF cli is a Swift command-line tool that extracts text from imag
 ## Features
 - Extracts text using Apple's Vision framework.
 - Outputs text as a selectable/searchable PDF.
-- Supports multiple image files in a single run.
 - Debug mode to visualize recognized text bounding boxes.
 - Ensures PDF/A compliance with metadata.
 
