@@ -5,7 +5,7 @@ import NaturalLanguage
 import PDFKit
 import Vision
 
-let fontScaleX = 0.7 // Magic number. Text wont render in PDF unless we scale it down a little bit.
+let fontScaleX = 0.7 // Magic number. Text wont render in PDF unless we scale it down a little bit against bounding box.
 let a4PortraitSize = CGSize(width: 595, height: 842) // A4 portrait dimensions in points
 
 func extractTitle(from text: String) -> String {
