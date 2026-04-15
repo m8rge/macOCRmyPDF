@@ -647,9 +647,9 @@ if isDirectory.boolValue {
 
     let result: Result<String, OCRError>
     if fileExtension == "pdf" {
-        result = processPDF(from: inputPath, outputPDFPath: outputPDFPath, debug: true)
+        result = processPDF(from: inputPath, outputPDFPath: outputPDFPath, debug: debugMode)
     } else {
-        result = recognizeText(from: inputPath, outputPDFPath: outputPDFPath, debug: true)
+        result = recognizeText(from: inputPath, outputPDFPath: outputPDFPath, debug: debugMode)
     }
 
     // Handle result for single file mode
