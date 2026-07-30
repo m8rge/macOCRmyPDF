@@ -224,7 +224,7 @@ func processImageToPDF(cgImage: CGImage, pdfContext: CGContext, pageBounds: CGRe
     return extractedText
 }
 
-func processPDF(from pdfPath: String, outputPDFPath: String, debug: Bool = false) -> Result<String, OCRError> {
+func processPDF(from pdfPath: String, outputPDFPath: String, reOcrMode: Bool = false, debug: Bool = false) -> Result<String, OCRError> {
     let pdfURL = URL(fileURLWithPath: pdfPath)
 
     guard let inputPDF = PDFDocument(url: pdfURL) else {
@@ -234,9 +234,9 @@ func processPDF(from pdfPath: String, outputPDFPath: String, debug: Bool = false
         return .failure(.fileLoadFailed("Unable to load PDF"))
     }
 
-    if pdfHasTextLayer(pdfURL: pdfURL) {
+    if pdfHasTextLayer(pdfURL: pdfURL) && !reOcrMode {
         if debug {
-            print("PDF already has a text layer. Skipping.")
+            print("PDF already has a text layer and --reocr not set. Skipping.")
         }
         return .failure(.textLayerExists)
     }
@@ -403,7 +403,7 @@ func recognizeText(from imagePath: String, outputPDFPath: String, debug: Bool = 
     }
 }
 
-func processBatch(inputDir: String, outputDir: String, inplace: Bool, backupDir: String?, debug: Bool) -> BatchResult {
+func processBatch(inputDir: String, outputDir: String, inplace: Bool, backupDir: String?, reOcrMode: Bool, debug: Bool) -> BatchResult {
     var result = BatchResult()
     let fileManager = FileManager.default
     let logPath = "\(fileManager.currentDirectoryPath)/ocr-process.log"
@@ -486,7 +486,7 @@ func processBatch(inputDir: String, outputDir: String, inplace: Bool, backupDir:
         let processResult: Result<String, OCRError>
 
         if fileExtension == "pdf" {
-            processResult = processPDF(from: sourceFilePath, outputPDFPath: outputPath, debug: debug)
+            processResult = processPDF(from: sourceFilePath, outputPDFPath: outputPath, reOcrMode: reOcrMode, debug: debug)
         } else {
             processResult = recognizeText(from: sourceFilePath, outputPDFPath: outputPath, debug: debug)
         }
@@ -571,8 +571,8 @@ func processBatch(inputDir: String, outputDir: String, inplace: Bool, backupDir:
 
 if CommandLine.arguments.count < 2 {
     print("Usage:")
-    print("  Single file:  macocrpdf <input_file> <output_pdf> [--debug]")
-    print("  Directory:    macocrpdf <input_dir> [<output_dir>] [--inplace] [--debug]")
+    print("  Single file:  macocrpdf <input_file> <output_pdf> [--debug] [--reocr]")
+    print("  Directory:    macocrpdf <input_dir> [<output_dir>] [--inplace] [--debug] [--reocr]")
     print("")
     print("Single file mode:")
     print("  Supports image files (PNG, JPG, etc.) and PDF files")
@@ -589,6 +589,7 @@ let fileManager = FileManager.default
 let inputPath = CommandLine.arguments[1]
 let debugMode = CommandLine.arguments.contains("--debug")
 let inplaceMode = CommandLine.arguments.contains("--inplace")
+let reOcrMode = CommandLine.arguments.contains("--reocr")
 
 var isDirectory: ObjCBool = false
 fileManager.fileExists(atPath: inputPath, isDirectory: &isDirectory)
@@ -614,7 +615,7 @@ if isDirectory.boolValue {
         // Process in place: files stay in original directory
         // Only files that are processed get moved to backup first
         // Skipped files and subdirectories remain untouched
-        _ = processBatch(inputDir: inputPath, outputDir: inputPath, inplace: true, backupDir: backupDir, debug: debugMode)
+        _ = processBatch(inputDir: inputPath, outputDir: inputPath, inplace: true, backupDir: backupDir, reOcrMode: reOcrMode, debug: debugMode)
 
     } else {
         // Check if second argument is provided and is not a flag
@@ -631,7 +632,7 @@ if isDirectory.boolValue {
             outputDir = parentDir.appendingPathComponent("\(dirName)-ocr").path
         }
 
-        _ = processBatch(inputDir: inputPath, outputDir: outputDir, inplace: false, backupDir: nil, debug: debugMode)
+        _ = processBatch(inputDir: inputPath, outputDir: outputDir, inplace: false, backupDir: nil, reOcrMode: reOcrMode, debug: debugMode)
     }
 
 } else {
@@ -647,7 +648,7 @@ if isDirectory.boolValue {
 
     let result: Result<String, OCRError>
     if fileExtension == "pdf" {
-        result = processPDF(from: inputPath, outputPDFPath: outputPDFPath, debug: debugMode)
+        result = processPDF(from: inputPath, outputPDFPath: outputPDFPath, reOcrMode: reOcrMode, debug: debugMode)
     } else {
         result = recognizeText(from: inputPath, outputPDFPath: outputPDFPath, debug: debugMode)
     }
